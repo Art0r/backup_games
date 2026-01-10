@@ -19,6 +19,7 @@ function compact_proton_game() {
   tar -czf "${bkp_name}" "$1"
 
   mv "$2/$bkp_name" "/tmp/"
+  cp "/tmp/$bkp_name" "$HOME/Downloads"
 }
 
 # compact ds3
