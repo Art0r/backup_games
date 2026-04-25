@@ -1,29 +1,47 @@
 #!/usr/bin/bash
 
-function compact_proton_game() {
-  # parameters
-  #   - $1 bkp file name
-  #   - $2 game files folder
-  #   - $3 save files folder
+# parameters
+#   - $1 function [backup, restore]
+#   - $2 game files folder
+#   - $3 save files folder
 
-  bkp_name="${1,,}"
+if [ $# -eq 0 ]; then
+  echo "Nenhum argumento fornecido"
+  exit 1
+fi
 
-  # replace empty space for '_'
-  bkp_name="${bkp_name// /_}"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+  echo "Argumento invalido"
+  exit 1
+fi
 
-  # adding file const name and extension
-  bkp_name="${bkp_name}_bkp.tar.gz"
+function backup_from_game() {
+  bkp_name=$(date +"%Y%m%d%H%M")
+  bkp_name="/tmp/${bkp_name}.zip"
 
-  cd "$2" || exit
+  # Change to the parent directory of your game folder
+  cd "$1" || return
 
-  tar -czf "${bkp_name}" "$1"
+  # Zip just the folder name (not full path)
+  zip -9 -r "${bkp_name}" .
 
-  mv "$2/$bkp_name" "/tmp/"
-  cp "/tmp/$bkp_name" "$HOME/Downloads"
+  mv "${bkp_name}" "$2"
 }
 
-# compact ds3
-compact_proton_game "DarkSoulsIII" "$HOME/.local/share/Steam/steamapps/compatdata/374320/pfx/drive_c/users/steamuser/AppData/Roaming"
+function restore_from_file() {
+  # parameters
+  #   - $1 save files folder
+  #   - $2 ziped file path
 
-# compact dwarf fortress
-compact_proton_game "Dwarf Fortress" "$HOME/.local/share/Bay 12 Games"
+  rm -rf "$1"
+
+  unzip -d "$1" "$2"
+}
+
+if [ "$1" = "backup" ]; then
+  backup_from_game "$2" "$3"
+fi
+
+if [ "$1" = "restore" ]; then
+  restore_from_file "$2" "$3"
+fi
