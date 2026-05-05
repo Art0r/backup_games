@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 
 # parameters
-#   - $1 function [backup, restore]
 #   - $2 game files folder
 #   - $3 save files folder
 
@@ -10,38 +9,29 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+if [ -z "$1" ] || [ -z "$2" ]; then
   echo "Argumento invalido"
   exit 1
 fi
 
-function backup_from_game() {
-  bkp_name=$(date +"%Y%m%d%H%M")
-  bkp_name="/tmp/${bkp_name}.zip"
+cd "$1" || exit
 
-  # Change to the parent directory of your game folder
-  cd "$1" || return
+# primeiro dividimos o path fornecido pelo usuário para que possamos iterar
+readarray -d "/" -t paths_array <<<"$1"
 
-  # Zip just the folder name (not full path)
-  zip -9 -r "${bkp_name}" .
+# para que possamos criar o os diretórios com cada path vamos começar a string com o $HOME
+path_to_create="$HOME"
 
-  mv "${bkp_name}" "$2"
-}
+# itere os paths para criar o diretório caso não exista
+# sempre adicionando o caminho ao $path_to_create
+for path in "${paths_array[@]}"; do
+  path_to_create="$path_to_create/$path"
+  mkdir -p "$path_to_create"
+done
 
-function restore_from_file() {
-  # parameters
-  #   - $1 save files folder
-  #   - $2 ziped file path
+bkp_name=$(date +"%Y%m%d%H%M")
+bkp_name="/tmp/${bkp_name}.zip"
 
-  rm -rf "$1"
+zip -r "${bkp_name}" "$1"
 
-  unzip -d "$1" "$2"
-}
-
-if [ "$1" = "backup" ]; then
-  backup_from_game "$2" "$3"
-fi
-
-if [ "$1" = "restore" ]; then
-  restore_from_file "$2" "$3"
-fi
+mv "${bkp_name}" "$2"

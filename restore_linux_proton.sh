@@ -1,23 +1,32 @@
 #!/usr/bin/bash
 
-function restore_proton_game() {
-  # parameters
-  #   - $1 bkp file name
-  #   - $2 game folder to extract to
+# parameters
+#   - $1 save files folder
+#   - $2 ziped file path
 
-  bkp_name="${1,,}"
+if [ $# -eq 0 ]; then
+  echo "Nenhum argumento fornecido"
+  exit 1
+fi
 
-  # replace empty space for '_'
-  bkp_name="${bkp_name// /_}"
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Argumento invalido"
+  exit 1
+fi
 
-  # adding file const name and extension
-  bkp_name="/tmp/${bkp_name}_bkp.tar.gz"
+# primeiro dividimos o path fornecido pelo usuário para que possamos iterar
+readarray -d "/" -t paths_array <<<"$1"
 
-  rm -rf "${2:?}/${1}"
+# para que possamos criar o os diretórios com cada path vamos começar a string com o $HOME
+path_to_create="$HOME"
 
-  tar -xf "$bkp_name" -C "$2"
-}
+# itere os paths para criar o diretório caso não exista
+# sempre adicionando o caminho ao $path_to_create
+for path in "${paths_array[@]}"; do
+  path_to_create="$path_to_create/$path"
+  mkdir -p "$path_to_create"
+done
 
-restore_proton_game "DarkSoulsIII" "$HOME/.local/share/Steam/steamapps/compatdata/374320/pfx/drive_c/users/steamuser/AppData/Roaming"
+rm -rf "$1"
 
-restore_proton_game "Dwarf Fortress" "$HOME/.local/share/Bay 12 Games"
+unzip "$1" -d "$2"
