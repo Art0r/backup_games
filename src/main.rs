@@ -2,10 +2,13 @@ mod backup;
 mod models;
 mod restore;
 
+use walkdir::WalkDir;
+
 use crate::backup::backup;
-use crate::models::{Cli, FuncType};
+use crate::models::{BackupError, Cli, FuncType};
 use crate::restore::restore;
 
+use std::error::Error;
 use std::path::PathBuf;
 
 fn parse_func_type(s: &str) -> Result<FuncType, String> {

@@ -1,19 +1,22 @@
-use std::fmt::format;
 use std::fs::File;
 use walkdir::WalkDir;
 
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipWriter};
 
-use crate::models::Cli;
+use crate::models::{BackupError, Cli};
 
-pub fn backup(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
-    if !cli.backup_path.is_dir() {
-        panic!("Backup is not a directory")
+pub fn backup(cli: Cli) -> Result<(), BackupError> {
+    if !cli.backup_path.exists() {
+        return Err(BackupError::BackupPathNotFound {
+            path: cli.backup_path.display().to_string(),
+        });
     }
 
-    if cli.restore_path.exists() {
-        panic!("Restore file already exists");
+    if !cli.backup_path.is_dir() {
+        return Err(BackupError::BackupPathNotDirectory {
+            path: cli.backup_path.display().to_string(),
+        });
     }
 
     let file = File::create(cli.restore_path.clone())?;
@@ -25,16 +28,17 @@ pub fn backup(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
         .compression_method(CompressionMethod::Bzip2)
         .unix_permissions(0o755);
 
-    for entry_result in walkdir.into_iter() {
-        let entry = match entry_result {
-            Ok(entry) => entry,
-            Err(e) => {
-                return Err(format!("Error while traversing directory: {e}").into());
-            }
-        };
+    let walkdir = WalkDir::new(&cli.backup_path);
 
-        let path = entry.path();
-        let path_striped = path.strip_prefix(cli.backup_path.clone())?;
+    for entry in walkdir.into_iter() {
+        let entry_result = entry.map_err(|e| BackupError::WalkDirError {
+            path: cli.backup_path.display().to_string(),
+            source: e,
+        })?;
+
+        let path = entry_result.path();
+        let path_striped = path.strip_prefix(cli.backup_path.clone()).unwrap();
+
         let path_as_string = path_striped
             .to_str()
             .map(str::to_owned)
