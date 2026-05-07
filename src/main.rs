@@ -1,8 +1,10 @@
 mod backup;
 mod models;
+mod restore;
 
 use crate::backup::backup;
 use crate::models::{Cli, FuncType};
+use crate::restore::restore;
 
 use std::path::PathBuf;
 
@@ -33,6 +35,6 @@ fn main() {
 
     match cli.func {
         FuncType::Backup => backup(cli.clone()),
-        _ => panic!("Nenhuma funcao selecionada"),
-    }
+        FuncType::Restore => restore(cli.clone()),
+    };
 }
