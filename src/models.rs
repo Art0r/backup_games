@@ -14,14 +14,23 @@ pub struct Cli {
 }
 #[derive(Debug, thiserror::Error)]
 pub enum BackupError {
-    #[error("Backup path does not exist: {path}")]
-    BackupPathNotFound { path: String },
+    #[error("{path}")]
+    TargetGameFolderPathNotFound { path: String },
 
-    #[error("Backup path is not a directory: {path}")]
-    BackupPathNotDirectory { path: String },
+    #[error("{path}")]
+    TargetGameFolderPathNotDirectory { path: String },
 
-    #[error("Backup path does not exist: {path}")]
+    #[error("{path}")]
+    TargetGameRestoreFileNotFound { path: String },
+
+    #[error("{path}")]
+    TargetGameRestoreNotAFile { path: String },
+
+    #[error("{path}")]
     BackupPathError { path: String },
+
+    #[error("{path}")]
+    BackupFileError { path: String },
 
     #[error("Failed to read directory '{path}': {source}")]
     WalkDirError {
@@ -35,4 +44,7 @@ pub enum BackupError {
 
     #[error("Zip path error prefix '{prefix}' from path '{path}'")]
     ZipPathError { path: String, prefix: String },
+
+    #[error("{path}")]
+    FileCreationError { path: String },
 }

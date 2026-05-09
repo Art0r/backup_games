@@ -8,21 +8,21 @@ use crate::models::{BackupError, Cli};
 
 pub fn backup(cli: Cli) -> Result<(), BackupError> {
     if !cli.backup_path.exists() {
-        return Err(BackupError::BackupPathNotFound {
+        return Err(BackupError::TargetGameFolderPathNotFound {
             path: cli.backup_path.display().to_string(),
         });
     }
 
     if !cli.backup_path.is_dir() {
-        return Err(BackupError::BackupPathNotDirectory {
+        return Err(BackupError::TargetGameFolderPathNotDirectory {
             path: cli.backup_path.display().to_string(),
         });
     }
 
-    let file = File::create(cli.restore_path.clone()).map_err(|_| BackupError::ZipPathError {
-        path: cli.backup_path.display().to_string(),
-        prefix: cli.backup_path.display().to_string(),
-    })?;
+    let file =
+        File::create(cli.restore_path.clone()).map_err(|_| BackupError::FileCreationError {
+            path: cli.backup_path.display().to_string(),
+        })?;
 
     let mut zip = ZipWriter::new(file);
 
