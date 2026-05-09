@@ -2,14 +2,9 @@ mod backup;
 mod models;
 mod restore;
 
-use anyhow::{Ok, Result};
-use walkdir::WalkDir;
-
 use crate::backup::backup;
-use crate::models::{BackupError, Cli, FuncType};
+use crate::models::{Cli, FuncType};
 use crate::restore::restore;
-
-use std::error::Error;
 use std::path::PathBuf;
 
 fn main() {
@@ -35,5 +30,9 @@ fn main() {
     match cli.func {
         FuncType::Backup => backup(cli.clone()),
         FuncType::Restore => restore(cli.clone()),
-    };
+    }
+    .unwrap_or_else(|e| {
+        eprintln!("Error: {:?}", e);
+        std::process::exit(1);
+    });
 }

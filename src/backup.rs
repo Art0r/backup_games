@@ -19,12 +19,10 @@ pub fn backup(cli: Cli) -> Result<(), BackupError> {
         });
     }
 
-    let file = File::create(cli.restore_path.clone()).map_err(|e| BackupError::ZipPathError {
+    let file = File::create(cli.restore_path.clone()).map_err(|_| BackupError::ZipPathError {
         path: cli.backup_path.display().to_string(),
         prefix: cli.backup_path.display().to_string(),
     })?;
-
-    let walkdir = WalkDir::new(cli.backup_path.clone());
 
     let mut zip = ZipWriter::new(file);
 
@@ -41,7 +39,7 @@ pub fn backup(cli: Cli) -> Result<(), BackupError> {
         })?;
 
         let path = entry_result.path();
-        let path_striped = path.strip_prefix(cli.backup_path.clone()).map_err(|e| {
+        let path_striped = path.strip_prefix(cli.backup_path.clone()).map_err(|_| {
             BackupError::StripPrefixError {
                 path: path.display().to_string(),
                 prefix: cli.backup_path.display().to_string(),
@@ -52,29 +50,31 @@ pub fn backup(cli: Cli) -> Result<(), BackupError> {
 
         if path.is_file() {
             zip.start_file(path_as_string, options)
-                .map_err(|e| BackupError::ZipPathError {
+                .map_err(|_| BackupError::ZipPathError {
                     path: path.display().to_string(),
                     prefix: cli.backup_path.display().to_string(),
-                });
+                })?;
 
-            let mut f = File::open(path).map_err(|e| BackupError::ZipPathError {
+            let mut f = File::open(path).map_err(|_| BackupError::ZipPathError {
                 path: path.display().to_string(),
                 prefix: cli.backup_path.display().to_string(),
             })?;
 
-            std::io::copy(&mut f, &mut zip);
+            std::io::copy(&mut f, &mut zip).map_err(|_| BackupError::BackupPathError {
+                path: path.display().to_string(),
+            })?;
         } else if !path_striped.as_os_str().is_empty() {
             zip.add_directory(path_as_string, options)
-                .map_err(|e| BackupError::ZipPathError {
+                .map_err(|_| BackupError::ZipPathError {
                     path: path.display().to_string(),
                     prefix: cli.backup_path.display().to_string(),
                 })?;
         }
     }
-    zip.finish().map_err(|e| BackupError::ZipPathError {
+    zip.finish().map_err(|_| BackupError::ZipPathError {
         path: cli.backup_path.display().to_string(),
         prefix: cli.backup_path.display().to_string(),
-    });
+    })?;
 
     Ok(())
 }

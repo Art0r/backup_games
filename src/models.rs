@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum FuncType {
@@ -12,7 +12,6 @@ pub struct Cli {
     pub backup_path: PathBuf,
     pub restore_path: PathBuf,
 }
-
 #[derive(Debug, thiserror::Error)]
 pub enum BackupError {
     #[error("Backup path does not exist: {path}")]
@@ -20,6 +19,9 @@ pub enum BackupError {
 
     #[error("Backup path is not a directory: {path}")]
     BackupPathNotDirectory { path: String },
+
+    #[error("Backup path does not exist: {path}")]
+    BackupPathError { path: String },
 
     #[error("Failed to read directory '{path}': {source}")]
     WalkDirError {

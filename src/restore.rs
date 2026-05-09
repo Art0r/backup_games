@@ -1,5 +1,3 @@
-use std::io::Error;
-
 use crate::models::{BackupError, Cli};
 
 pub fn restore(cli: Cli) -> Result<(), BackupError> {
