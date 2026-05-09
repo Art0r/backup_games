@@ -2,6 +2,7 @@ mod backup;
 mod models;
 mod restore;
 
+use anyhow::{Ok, Result};
 use walkdir::WalkDir;
 
 use crate::backup::backup;
@@ -11,22 +12,17 @@ use crate::restore::restore;
 use std::error::Error;
 use std::path::PathBuf;
 
-fn parse_func_type(s: &str) -> Result<FuncType, String> {
-    match s.to_lowercase().as_str() {
-        "backup" => Ok(FuncType::Backup),
-        "restore" => Ok(FuncType::Restore),
-        _ => Err(format!(
-            "Invalid function: {}. Use 'backup' or 'restore'",
-            s
-        )),
-    }
-}
-
 fn main() {
     let func_arg = std::env::args().nth(1).expect("No function specified");
-    let func = parse_func_type(&func_arg).expect("Function is not valid");
+    let func = match func_arg.to_lowercase().as_str() {
+        "backup" => FuncType::Backup,
+        "restore" => FuncType::Restore,
+        _ => panic!("Invalid function: {}. Use 'backup' or 'restore'", func_arg),
+    };
+
     let backup_arg = std::env::args().nth(2).expect("Backup path must be set");
     let backup_path = PathBuf::from(backup_arg);
+
     let restore_arg = std::env::args().nth(3).expect("Restore path must be set");
     let restore_path = PathBuf::from(restore_arg);
 

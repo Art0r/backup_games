@@ -28,11 +28,9 @@ pub enum BackupError {
         source: walkdir::Error,
     },
 
-    #[error("Failed to strip prefix '{prefix}' from path '{path}': {source}")]
-    StripPrefixError {
-        path: String,
-        prefix: String,
-        #[source]
-        source: std::path::StripPrefixError,
-    },
+    #[error("Failed to strip prefix '{prefix}' from path '{path}'")]
+    StripPrefixError { path: String, prefix: String },
+
+    #[error("Zip path error prefix '{prefix}' from path '{path}'")]
+    ZipPathError { path: String, prefix: String },
 }
