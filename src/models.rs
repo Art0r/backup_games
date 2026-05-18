@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{env, fs, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub enum FuncType {
@@ -8,10 +8,34 @@ pub enum FuncType {
 
 #[derive(Debug, Clone)]
 pub struct Cli {
-    pub func: FuncType,
-    pub backup_path: PathBuf,
-    pub restore_path: PathBuf,
+    pub from: PathBuf,
+    pub to: PathBuf,
 }
+
+impl Cli {
+    pub fn backup_cli(from: String, to: Option<String>) -> Cli {
+        let from_path = PathBuf::from(from);
+        let home = env::var("HOME").expect("$HOME não existe");
+        let backups_path = PathBuf::from(format!("{}/backps", home));
+        let to_name = match to {
+            Some(name) => name,
+            None => "placeholder".to_string(),
+        };
+
+        if !backups_path.is_dir() {
+            fs::create_dir(backups_path.clone())
+                .expect("Ocorreu um erro ao criar a pasta ~/backups");
+        }
+        let to_path_file = PathBuf::from(format!("{}.zip", to_name));
+        let to_path = backups_path.clone().join(to_path_file);
+
+        Cli {
+            from: from_path,
+            to: to_path,
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum BackupError {
     #[error("{path}")]
@@ -46,5 +70,5 @@ pub enum BackupError {
     ZipPathError { path: String, prefix: String },
 
     #[error("{path}")]
-    FileCreationError { path: String },
+    FileCreationError { path: String, error: String },
 }
