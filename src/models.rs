@@ -12,6 +12,11 @@ pub struct Cli {
     pub to: PathBuf,
 }
 
+#[derive(Debug, Clone)]
+pub enum PredefinedFunc {
+    CalibreBackup,
+}
+
 impl Cli {
     pub fn backup_cli(from: String, to: Option<String>) -> Cli {
         let from_path = PathBuf::from(from);

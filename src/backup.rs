@@ -1,5 +1,4 @@
-use std::fs::{File, OpenOptions};
-use std::path::PathBuf;
+use std::fs::File;
 use walkdir::WalkDir;
 
 use zip::write::SimpleFileOptions;
